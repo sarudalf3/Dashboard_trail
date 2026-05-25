@@ -1,24 +1,27 @@
 {
-    "id": "2E948542",
+    "id": "3714E3A1",
     "path": "C:/Users/sarud/Github/SpatialCharts/Dashboard_Trail/dash_draft.qmd",
     "project_path": "dash_draft.qmd",
     "type": "quarto_markdown",
-    "hash": "3756268510",
+    "hash": "0",
     "contents": "",
     "dirty": false,
-    "created": 1778704226324.0,
-    "source_on_save": true,
+    "created": 1779740770863.0,
+    "source_on_save": false,
     "relative_order": 1,
     "properties": {
         "source_window_id": "",
-        "Source": "Source"
+        "Source": "Source",
+        "cursorPosition": "28,38",
+        "scrollLine": "15",
+        "last_setup_crc32": "6a56bfee781ff6bb"
     },
     "folds": "",
-    "lastKnownWriteTime": 1778704286,
+    "lastKnownWriteTime": 1778729837,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1778704286531,
+    "last_content_update": 1778729837,
     "read_only": false,
     "read_only_alternatives": []
 }

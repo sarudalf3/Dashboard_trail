@@ -26,6 +26,7 @@ library(units)
 
 # --- CARGA Y CÁLCULOS ---
 archivo_gpx <- "banos_azules.gpx"
+track_sum <- st_read(archivo_gpx, layer = "tracks")
 points <- st_read(archivo_gpx, layer = "track_points")
 
 points$time <- as.POSIXct(points$time, format="%Y-%m-%dT%H:%M:%OSZ", tz="UTC")
@@ -58,8 +59,8 @@ lineas_list <- lapply(1:(n-1), function(i) {
   
 # Creamos el dataframe de segmentos heredando los datos de df_plot
 df_segments_top <- df_plot[-1, ] # Quitamos el primer punto porque no tiene segmento previo
-  df_segments_top$geometry <- st_sfc(lineas_list, crs = 4326)
-  df_segments_top <- st_as_sf(df_segments_top)
+df_segments_top$geometry <- st_sfc(lineas_list, crs = 4326)
+df_segments_top <- st_as_sf(df_segments_top)
 
 # Métricas
 obtener_metrics <- function(data) {
@@ -85,6 +86,18 @@ kpi_resumen <- df_plot %>%
     ascenso_acumulado_m = sum(delta_ele[delta_ele > 0], na.rm = TRUE),
     descenso_acumulado_m = sum(delta_ele[delta_ele < 0], na.rm = TRUE)
   )
+
+kpi_velocidad <- df_plot %>%
+  st_drop_geometry() %>%
+  group_by(Trayecto) %>%
+  summarise(
+    # Métricas básicas
+    vel_pro = mean(vel_kmh, na.rm = TRUE),
+    vel_min   = min(vel_kmh, na.rm = TRUE),
+    vel_max   = max(vel_kmh, na.rm = TRUE),
+    vel_med  = median(vel_kmh, na.rm = TRUE),
+    # Promedio recortado al 90% (elimina 5% de cada extremo)
+    vel_rec90 = mean(vel_kmh, trim = 0.05, na.rm = TRUE))
 
 # Segmentos para el mapa
 df_segments <- df_plot %>%
@@ -248,7 +261,7 @@ value_box(
   title = "Tiempo Recorrido",
   value = paste0(round(sum(kpi_resumen$tiempo_total_mins),0) %/% 60, ":", round(sum(kpi_resumen$tiempo_total_mins),0) %% 60, " hrs"), # Reemplazar con tu variable
   showcase = bsicons::bs_icon("stopwatch"),
-  theme = "primary",
+  theme = "danger",
   p("Horario Ida:", m_ida$inicio, " - ",  m_ida$fin),
   p("Horario Vuelta:", m_vuelta$inicio, " - ", m_vuelta$fin) 
 )
@@ -283,12 +296,12 @@ value_box(
 ```{r}
 #| echo: false
 value_box(
-  title = "Pendiente Máxima",
-  value = "24.5 %", # Reemplazar con tu variable
-  showcase = bsicons::bs_icon("graph-up-arrow"),
-  theme = "info",
-  p("Tramo de mayor exigencia")
+  title = track_sum$name,
+  value = format(min(points$time), "%d-%m-%Y"), # Reemplazar con tu variable
+  showcase = bsicons::bs_icon("cloud-sun"),
+  theme = "primary"
 )
+
 ```
 :::
 ::::
@@ -370,18 +383,24 @@ ggplot(df_segments_top) +
 #| echo: false
 
 value_box(
-  title = "Horario Tramo",
-  value = paste(m_ida$inicio, "-", m_ida$fin),
-  showcase = bsicons::bs_icon("clock"),
+  title = "Velocidad Ida",
+  value = paste(kpi_velocidad %>% filter(Trayecto == "1. Ida") %>% 
+  pull(vel_pro) %>% round(2), "km/h"),
+  showcase = bsicons::bs_icon("signpost"),
   theme = "info",
-  p("Tiempo total de subida")
+  p(paste("Min: ", kpi_velocidad %>% filter(Trayecto == "1. Ida") %>% 
+  pull(vel_min) %>% round(2), "km/h")),
+  p(paste("Max : ", kpi_velocidad %>% filter(Trayecto == "1. Ida") %>% pull(vel_max) %>% round(2), "km/h")),
+  p(paste("Med: ", kpi_velocidad %>% filter(Trayecto == "1. Ida") %>% 
+  pull(vel_med) %>% round(2), "km/h")),
+  p(paste("prom_90 : ", kpi_velocidad %>% filter(Trayecto == "1. Ida") %>% pull(vel_rec90) %>% round(2), "km/h"))  
 )
 
 value_box(
-  title = "Pendiente Media",
+  title = "Ascenso",
   value = paste(m_ida$pend_avg, "%"),
-  showcase = bsicons::bs_icon("graph-up"),
-  theme = "info",
+  showcase = bsicons::bs_icon("arrow-up-right-circle"),
+  theme = "warning",
   p("Exigencia física del ascenso")
 )
 ```
@@ -413,17 +432,23 @@ crear_mapa(df_segments %>% filter(Trayecto == "2. Vuelta"))
 ```{r}
 #| echo: false
 value_box(
-  title = "Retorno",
-  value = paste(m_vuelta$fin, "hrs"),
-  showcase = bsicons::bs_icon("house-check"),
-  theme = "success",
-  p(paste("Hora de llegada al punto base"))
+  title = "Velocidad Vuelta",
+  value = paste("\\bar{x} =", kpi_velocidad %>% filter(Trayecto == "2. Vuelta") %>% 
+  pull(vel_pro) %>% round(2), "km/h"),
+  showcase = bsicons::bs_icon("signpost", style = "color: blue; transform: rotateY(180deg); display: inline-block;"),
+  theme = "info",
+  p(paste("Min: ", kpi_velocidad %>% filter(Trayecto == "2. Vuelta") %>% 
+  pull(vel_min) %>% round(2), "km/h")),
+  p(paste("Max : ", kpi_velocidad %>% filter(Trayecto == "2. Vuelta") %>% pull(vel_max) %>% round(2), "km/h")),
+  p(paste("Med: ", kpi_velocidad %>% filter(Trayecto == "2. Vuelta") %>% 
+  pull(vel_med) %>% round(2), "km/h")),
+  p(paste("prom_90 : ", kpi_velocidad %>% filter(Trayecto == "2. Vuelta") %>% pull(vel_rec90) %>% round(2), "km/h"))  
 )
 
 value_box(
-  title = "Horario Tramo",
+  title = "Descenso",
   value = paste(m_vuelta$inicio, "-", m_vuelta$fin),
-  showcase = bsicons::bs_icon("clock-history"),
+  showcase = bsicons::bs_icon("arrow-down-right-circle"),
   theme = "success",
   p("Tiempo total de descenso")
 )
@@ -439,12 +464,12 @@ Las métricas presentadas en este reporte se calculan utilizando las siguientes 
 ::::: grid
 
 ::: g-col-6
-**Velocidad Instantánea ($km/h$):**
+**Velocidad ($km/h$):**
 $$\text{Velocidad} = \frac{\text{Distancia (m)} / 1000}{\text{Tiempo (s)} / 3600}$$
 :::
 
 ::: g-col-6
-**Pendiente del Tramo (%):**
+**Pendiente (%):**
 $$\text{Pendiente} = \left( \frac{\Delta \text{Elevación (m)}}{\text{Distancia (m)}} \right) \times 100$$
 :::
 :::::
