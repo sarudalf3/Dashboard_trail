@@ -1,0 +1,2 @@
+"0","#| echo: false"
+"0","crear_mapa(df_segments %>% filter(Trayecto == ""1. Ida""))"

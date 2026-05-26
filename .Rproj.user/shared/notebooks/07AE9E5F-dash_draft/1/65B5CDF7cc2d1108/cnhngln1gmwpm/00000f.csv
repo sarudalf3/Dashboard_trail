@@ -1,0 +1,7 @@
+"0","#| echo: false"
+"0","value_box("
+"0","  title = track_sum$name,"
+"0","  value = format(min(points$time), ""%d-%m-%Y""), # Reemplazar con tu variable"
+"0","  showcase = bsicons::bs_icon(""cloud-sun""),"
+"0","  theme = ""primary"""
+"0",")"

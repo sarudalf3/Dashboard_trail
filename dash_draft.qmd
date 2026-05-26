@@ -69,9 +69,10 @@ obtener_metrics <- function(data) {
     fin = format(max(data$time, na.rm=T), "%H:%M"),
     alt_max = round(max(data$ele, na.rm=T), 0),
     alt_min = round(min(data$ele, na.rm=T), 0),
-    pend_avg = round(mean(abs(data$pend_pct), na.rm=T), 1)
+    pend_avg = round(sum(data$delta_ele, na.rm=T) / sum(data$dist_points, na.rm=T)*100, 2)
   )
 }
+
 
 m_global <- obtener_metrics(df_plot)
 
@@ -98,6 +99,21 @@ kpi_velocidad <- df_plot %>%
     vel_med  = median(vel_kmh, na.rm = TRUE),
     # Promedio recortado al 90% (elimina 5% de cada extremo)
     vel_rec90 = mean(vel_kmh, trim = 0.05, na.rm = TRUE))
+
+kpi_pendiente <- df_plot %>%
+  st_drop_geometry() %>%
+  group_by(Trayecto) %>%
+  summarise(
+    # Pendientes Positivas (Ascenso)
+    n_pos = sum(pend_pct > 0, na.rm = TRUE),
+    pend_pos_avg = round(sum(delta_ele[pend_pct > 0], na.rm = TRUE)/
+      sum(dist_points[delta_ele > 0], na.rm = TRUE) * 100,  2),
+    # Pendientes Negativas (Descenso)
+    n_neg = sum(pend_pct < 0, na.rm = TRUE),
+    pend_neg_avg = round(sum(delta_ele[pend_pct < 0], na.rm = TRUE)/
+      sum(dist_points[delta_ele < 0], na.rm = TRUE) * 100,  2)   
+    )
+
 
 # Segmentos para el mapa
 df_segments <- df_plot %>%
@@ -144,7 +160,11 @@ crear_mapa <- function(datos) {
       label = tooltip_texto,
       highlightOptions = efecto_hover,
       labelOptions = labelOptions(
-      style = list("font-size" = "12px")
+        style = list(
+          "font-size" = "15px",         # <-- Aumenta el tamaño de la letra
+          "padding" = "8px 12px",       # <-- Le da aire al texto
+          "border-color" = "#2c3e50"    # <-- Un borde más elegante
+        )
       )
     ) %>%
     addPolylines(
@@ -152,7 +172,11 @@ crear_mapa <- function(datos) {
       label = tooltip_texto,
       highlightOptions = efecto_hover,
       labelOptions = labelOptions(
-      style = list("font-size" = "12px")
+      style = list(
+        "font-size" = "15px",
+        "padding" = "8px 12px",
+        "border-color" = "#2c3e50"
+        )
       )
     ) %>%
     
@@ -172,6 +196,58 @@ crear_mapa <- function(datos) {
 
 ```{=html}
 <style>
+/* 1. Reset base para homogeneizar motores de renderizado */
+  *, *::before, *::after {
+    box-sizing: border-box !important;
+  }
+  
+  body {
+    zoom: 90%; 
+  }
+
+  /* Solución alternativa exclusiva para Firefox (ya que no soporta la propiedad zoom) */
+  @-moz-document url-prefix() {
+    body {
+      transform: scale(0.9);
+      transform-origin: top center; 
+      width: 111.11%;
+    }
+  }
+
+  /* 2. Corrección de pantalla completa para Edge y Firefox */
+  body, #quarto-content, .page-columns {
+    width: 100% !important;
+    overflow-x: hidden; /* Evita scrolls horizontales fantasmas en Mozilla */
+  }
+
+  .page-columns #quarto-content {
+    padding-left: 25px !important;
+    padding-right: 25px !important;
+  }
+
+  /* 3. Tus estilos existentes para los componentes bslib */
+  /* Alineación de métricas */
+.bslib-value-box {
+  height: 220px !important;
+  margin-bottom: 10px !important;
+  }
+
+  
+  .bslib-value-box .value {
+    font-size: 1.3rem !important;
+  }
+
+  .footer-formulas {
+    margin-top: 50px;
+    padding: 25px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    color: #34495e;
+    font-size: 0.9em;
+  }
+
+
 /* Estilo para los títulos de sección */
 .section-title {
     color: #2c3e50;
@@ -201,7 +277,6 @@ crear_mapa <- function(datos) {
 
 .bslib-value-box .showcase { font-size: 2.2rem !important}
 .bslib-value-box .value-box-title { font-size: 1.6rem !important; ; font-weight: bold;}
-.bslib-value-box .value { font-size: 1.3rem !important; }
 
 /* Forzar que el mapa empiece pegado al tope de su columna */
 .leaflet-container {
@@ -381,27 +456,31 @@ ggplot(df_segments_top) +
 ::: g-col-4
 ```{r}
 #| echo: false
+# Filtrar datos específicos de Ida para simplificar las llamadas
+vel_ida <- kpi_velocidad %>% filter(Trayecto == "1. Ida")
+pend_ida <- kpi_pendiente %>% filter(Trayecto == "1. Ida")
 
 value_box(
   title = "Velocidad Ida",
-  value = paste(kpi_velocidad %>% filter(Trayecto == "1. Ida") %>% 
-  pull(vel_pro) %>% round(2), "km/h"),
+  value = paste("x̄ = ",round(vel_ida$vel_pro, 2), "km/h"),
   showcase = bsicons::bs_icon("signpost"),
   theme = "info",
-  p(paste("Min: ", kpi_velocidad %>% filter(Trayecto == "1. Ida") %>% 
-  pull(vel_min) %>% round(2), "km/h")),
-  p(paste("Max : ", kpi_velocidad %>% filter(Trayecto == "1. Ida") %>% pull(vel_max) %>% round(2), "km/h")),
-  p(paste("Med: ", kpi_velocidad %>% filter(Trayecto == "1. Ida") %>% 
-  pull(vel_med) %>% round(2), "km/h")),
-  p(paste("prom_90 : ", kpi_velocidad %>% filter(Trayecto == "1. Ida") %>% pull(vel_rec90) %>% round(2), "km/h"))  
+  # Subsección 1: Mínimo y Máximo
+  p(HTML(paste0("<b>Mín:</b> ", round(vel_ida$vel_min, 2), " km/h | <b>Máx:</b> ", round(vel_ida$vel_max, 2), " km/h")), style = "font-size: 1rem;"),
+  # Subsección 2: Mediana y Promedio Recortado
+  p(HTML(paste0("<b>Med:</b> ", round(vel_ida$vel_med, 2), " km/h | <b>x̄₉₀:</b> ", round(vel_ida$vel_rec90, 2), " km/h")), style = "font-size: 1rem;")
 )
 
+# CAJA 2: PENDIENTE (IDA)
 value_box(
-  title = "Ascenso",
+  title = "Pendiente Ida",
   value = paste(m_ida$pend_avg, "%"),
   showcase = bsicons::bs_icon("arrow-up-right-circle"),
   theme = "warning",
-  p("Exigencia física del ascenso")
+  # Subsección 1: Pendientes Positivas (Ascensos)
+  p(HTML(paste0("<b>Pend + : Ptos </b> ", pend_ida$n_pos, " | x̄: ", pend_ida$pend_pos_avg, "% ")), style = "font-size: 1rem;"),
+  # Subsección 2: Pendientes Negativas (Pequeñas bajadas/descansos en la ida)
+  p(HTML(paste0("<b>Pend - : ptos </b> ", pend_ida$n_neg, " | x̄: ", pend_ida$pend_neg_avg, "% ")), style = "font-size: 1rem;")
 )
 ```
 :::
@@ -431,26 +510,35 @@ crear_mapa(df_segments %>% filter(Trayecto == "2. Vuelta"))
 ::: g-col-4
 ```{r}
 #| echo: false
-value_box(
-  title = "Velocidad Vuelta",
-  value = paste("\\bar{x} =", kpi_velocidad %>% filter(Trayecto == "2. Vuelta") %>% 
-  pull(vel_pro) %>% round(2), "km/h"),
-  showcase = bsicons::bs_icon("signpost", style = "color: blue; transform: rotateY(180deg); display: inline-block;"),
-  theme = "info",
-  p(paste("Min: ", kpi_velocidad %>% filter(Trayecto == "2. Vuelta") %>% 
-  pull(vel_min) %>% round(2), "km/h")),
-  p(paste("Max : ", kpi_velocidad %>% filter(Trayecto == "2. Vuelta") %>% pull(vel_max) %>% round(2), "km/h")),
-  p(paste("Med: ", kpi_velocidad %>% filter(Trayecto == "2. Vuelta") %>% 
-  pull(vel_med) %>% round(2), "km/h")),
-  p(paste("prom_90 : ", kpi_velocidad %>% filter(Trayecto == "2. Vuelta") %>% pull(vel_rec90) %>% round(2), "km/h"))  
-)
+
+# Filtrar datos específicos de Vuelta
+vel_vta <- kpi_velocidad %>% filter(Trayecto == "2. Vuelta")
+pend_vta <- kpi_pendiente %>% filter(Trayecto == "2. Vuelta")
+
+# CAJA 1: PENDIENTE (VUELTA)
 
 value_box(
-  title = "Descenso",
-  value = paste(m_vuelta$inicio, "-", m_vuelta$fin),
-  showcase = bsicons::bs_icon("arrow-down-right-circle"),
+  title = "Pendiente Vuelta",
+  value = paste(m_vuelta$pend_avg, "%"),
+  showcase = bsicons::bs_icon("arrow-down-left-circle"),
   theme = "success",
-  p("Tiempo total de descenso")
+  # Subsección 1: Pendientes Negativas (Pequeñas bajadas/descansos en la ida)
+  p(HTML(paste0("<b>Pend - : ptos </b> ", pend_vta$n_neg, " | x̄: ", pend_vta$pend_neg_avg, "% ")), style = "font-size: 1rem;"),
+    # Subsección 2: Pendientes Positivas (Ascensos)
+  p(HTML(paste0("<b>Pend + : Ptos </b> ", pend_vta$n_pos, " | x̄: ", pend_vta$pend_pos_avg, "% ")), style = "font-size: 1rem;")
+)
+
+# CAJA 2: VELOCIDAD (VUELTA)
+
+value_box(
+  title = "Velocidad Vuelta",
+  value = paste("x̄ = ",round(vel_vta$vel_pro, 2), "km/h"),
+  showcase = bsicons::bs_icon("signpost", style = "color: blue; transform: rotateY(180deg); display: inline-block;"),
+  theme = "info",
+  # Subsección 1: Mínimo y Máximo
+  p(HTML(paste0("<b>Mín:</b> ", round(vel_vta$vel_min, 2), " km/h | <b>Máx:</b> ", round(vel_vta$vel_max, 2), " km/h")), style = "font-size: 1rem;"),
+  # Subsección 2: Mediana y Promedio Recortado
+  p(HTML(paste0("<b>Med:</b> ", round(vel_vta$vel_med, 2), " km/h | <b>x̄₉₀:</b> ", round(vel_vta$vel_rec90, 2), " km/h")), style = "font-size: 1rem;")
 )
 ```
 :::
