@@ -23,6 +23,7 @@ El panel está estructurado estratégicamente en secciones dinámicas e independ
 Esta sección consolida las métricas macro de la travesía mediante indicadores de alto impacto visual (`value_boxes` personalizados).
 Permite evaluar rápidamente la distancia acumulada, altitudes extremas, desniveles totales y el tiempo neto de marcha. Además, incluye un gráfico de perfil de elevación detallado desarrollado en `ggplot2`, ideal para identificar visualmente la exigencia del terreno.
 
+
 ![Resumen General del Dashboard](img/05_general.png)
 
 ### 2. Mapas Interactivos de Trayecto (Ida y Vuelta)
@@ -32,43 +33,44 @@ La sección de trayectos está separada mediante pestañas interactivas que divi
 Ambas pestañas integran un **Mapa Cartográfico Interactivo (`leaflet`)** que dibuja la traza del GPS. El mapa cuenta con control de capas para alternar la visualización entre la **Velocidad en tiempo real (km/h)** y el **Grado de Inclinación o Pendiente (%)**, equipado además con un *tooltip* de gran tamaño y respuesta *hover* optimizada para una lectura ultra precisa de cada coordenada.
 
 - **Ida:** Enfocada en la exigencia física. Incorpora subsecciones que desglosan la velocidad promedio (global, mínima, máxima, mediana y promedio recortado al 90% $x̄_{90}$) y un análisis exhaustivo de pendientes segregando la cantidad de puntos de ascenso frente a falsos llanos o pequeños descansos en la subida.
+
   ![Resumen Ida del Dashboard](img/02_ida.png)
 
 - **Vuelta:** Ajustada al ritmo de retorno y descenso. Configurada con paletas visuales e íconos específicos que contrastan con la ida, permitiendo medir los tramos técnicos de bajada rápida.
+
   ![Resumen Vuelta del Dashboard](img/03_vuelta.png)
 
 - **Indicadores:** Fórmula de métricas calculadas en el dashboard.
+
   ![Resumen KPI Dashboard](img/04_formulas.png)
 
-
-------------------------------------------------------------------------
+-----
 
 ## 🛠️ Herramientas y Stack Tecnológico
 
 El proyecto se construyó íntegramente bajo el ecosistema estadístico
 **R** y la suite de publicación científica **Quarto**, utilizando las
 siguientes librerías especializadas:
-
--   **`sf` (Simple Features):** Procesamiento de datos vectoriales y
+- **`sf` (Simple Features):** Procesamiento de datos vectoriales y
     manipulación de la geometría geoespacial del archivo GPX.
--   **`leaflet`:** Motor de renderizado cartográfico interactivo basado
+- **`leaflet`:** Motor de renderizado cartográfico interactivo basado
     en JavaScript para visualización en navegador.
--   **`bslib` & `bsicons`:** Diseño de la interfaz de usuario de
+- **`bslib` & `bsicons`:** Diseño de la interfaz de usuario de
     Dashboard, componentes de contenedores de tarjetas, cuadrículas
     jerárquicas y fuentes de iconos Bootstrap.
--   **`tidyverse` (`ggplot2`, `dplyr`, `lubridate`, `purrr`):**
+- **`tidyverse` (`ggplot2`, `dplyr`, `lubridate`, `purrr`):**
     Manipulación de series temporales, limpieza de datos, cálculo de
     promedios recortados, segmentación de trayectos y diseño del perfil
     topográfico estático.
--   **`htmltools`:** Inyección de fragmentos de código HTML estructurado
+- **`htmltools`:** Inyección de fragmentos de código HTML estructurado
     y estilos en línea CSS personalizados para las cajas de control de
     métricas.
--   **`paletteer`:** Gestión avanzada de paletas de color con alto
+- **`paletteer`:** Gestión avanzada de paletas de color con alto
     contraste estructural para las variables del mapa.
--   **`ggspatial` & `units`:** Soporte de escalas espaciales y
+- **`ggspatial` & `units`:** Soporte de escalas espaciales y
     normalización de variables métricas de distancia y altitud.
 
-------------------------------------------------------------------------
+-----
 
 ## 🖥️ Requerimientos del Sistema y Visualización
 
