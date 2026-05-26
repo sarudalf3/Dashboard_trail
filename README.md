@@ -1,72 +1,45 @@
----
-editor_options:
-  markdown:
-    wrap: 72
----
+# Performance Hiking Trail: Dashboard Baños Azules 🏔️🥾
 
-import re
+Este proyecto es un **Dashboard Interactivo de Rendimiento Deportivo** desarrollado en **Quarto (`.qmd`)** enfocado en el análisis espacial y temporal de la ruta de senderismo de alta montaña hacia **Baños Azules**, Chile. 
 
-# Definiendo el contenido detallado y profesional para el README.md
+> ⚠️ **REQUISITO CRÍTICO DE VISUALIZACIÓN:** Este dashboard ha sido diseñado exclusivamente para entornos de análisis en estaciones de trabajo fijas y **no es responsivo** (no cuenta con soporte autoajustable para dispositivos móviles o pantallas divididas). Para garantizar una correcta visualizacion, se requiere obligatoriamente un **ancho de pantalla mínimo de 1200px** (resolución estándar de notebooks de 13" o monitores de escritorio).
+>
+> Acceso al reporte [dashboard HTML](https://sarudalf3.github.io/Dashboard_trail/)
+>
+>
 
-readme_content = """\# Performance Hiking Trail: Dashboard Baños Azules
-🏔️🥾
+-----
 
-Este proyecto es un **Dashboard Interactivo de Rendimiento Deportivo**
-desarrollado en **Quarto (`.qmd`)** enfocado en el análisis espacial y
-temporal de la ruta de senderismo de alta montaña hacia **Baños
-Azules**, Chile.
+El objetivo principal es procesar archivos de posicionamiento global (`.gpx`), estructurar métricas analíticas avanzadas de velocidad, altitud y pendientes geográficas, y presentarlas visualmente para evaluar el desempeño físico tramo a tramo.
 
-El objetivo principal es procesar archivos de posicionamiento global
-(`.gpx`), estructurar métricas analíticas avanzadas de velocidad,
-altitud y pendientes geográficas, y presentarlas visualmente para
-evaluar el desempeño físico tramo a tramo.
-
-------------------------------------------------------------------------
+-----
 
 ## 📊 Información del Dashboard
 
-El panel está estructurado estratégicamente en secciones dinámicas e
-independientes para facilitar el análisis del trekking:
+El panel está estructurado estratégicamente en secciones dinámicas e independientes para facilitar el análisis del trekking:
 
 ### 1. Resumen General
 
-Esta sección consolida las métricas macro de la travesía mediante
-indicadores de alto impacto visual (`value_boxes` personalizados).
-Permite evaluar rápidamente la distancia acumulada, altitudes extremas,
-desniveles totales y el tiempo neto de marcha. Además, incluye un
-gráfico de perfil de elevación detallado desarrollado en `ggplot2`,
-ideal para identificar visualmente la exigencia del terreno.
+Esta sección consolida las métricas macro de la travesía mediante indicadores de alto impacto visual (`value_boxes` personalizados).
+Permite evaluar rápidamente la distancia acumulada, altitudes extremas, desniveles totales y el tiempo neto de marcha. Además, incluye un gráfico de perfil de elevación detallado desarrollado en `ggplot2`, ideal para identificar visualmente la exigencia del terreno.
 
-![Resumen General del Dashboard](images/resumen_general.png)\
-*(Nota: Reemplazar esta ruta con la captura real de la vista principal
-del dashboard)*
+![Resumen General del Dashboard](img/05_general.png)
 
 ### 2. Mapas Interactivos de Trayecto (Ida y Vuelta)
 
-La sección de trayectos está separada mediante pestañas interactivas que
-dividen analíticamente la experiencia de **Ida (Ascenso)** y **Vuelta
-(Descenso)**. Cada pestaña cuenta con una distribución asimétrica en
-malla (`grid`):
+La sección de trayectos está separada mediante pestañas interactivas que dividen analíticamente la experiencia de **Ida (Ascenso)** y **Vuelta (Descenso)**. 
 
--   **Ida:** Enfocada en la exigencia física. Incorpora subsecciones que
-    desglosan la velocidad promedio (global, mínima, máxima, mediana y
-    promedio recortado al 90% $x̄_{90}$) y un análisis exhaustivo de
-    pendientes segregando la cantidad de puntos de ascenso frente a
-    falsos llanos o pequeños descansos en la subida.
--   **Vuelta:** Ajustada al ritmo de retorno y descenso. Configurada con
-    paletas visuales e íconos específicos que contrastan con la ida,
-    permitiendo medir los tramos técnicos de bajada rápida.
+Ambas pestañas integran un **Mapa Cartográfico Interactivo (`leaflet`)** que dibuja la traza del GPS. El mapa cuenta con control de capas para alternar la visualización entre la **Velocidad en tiempo real (km/h)** y el **Grado de Inclinación o Pendiente (%)**, equipado además con un *tooltip* de gran tamaño y respuesta *hover* optimizada para una lectura ultra precisa de cada coordenada.
 
-Ambas pestañas integran un **Mapa Cartográfico Interactivo (`leaflet`)**
-que dibuja la traza del GPS. El mapa cuenta con control de capas para
-alternar la visualización entre la **Velocidad en tiempo real (km/h)** y
-el **Grado de Inclinación o Pendiente (%)**, equipado además con un
-*tooltip* de gran tamaño y respuesta *hover* optimizada para una lectura
-ultra precisa de cada coordenada.
+- **Ida:** Enfocada en la exigencia física. Incorpora subsecciones que desglosan la velocidad promedio (global, mínima, máxima, mediana y promedio recortado al 90% $x̄_{90}$) y un análisis exhaustivo de pendientes segregando la cantidad de puntos de ascenso frente a falsos llanos o pequeños descansos en la subida.
+  ![Resumen Ida del Dashboard](img/02_ida.png)
 
-![Mapa Interactivo - Ruta Ida y Vuelta](images/mapas_interactivos.png)\
-*(Nota: Reemplazar esta ruta con la captura real de los mapas
-interactivos)*
+- **Vuelta:** Ajustada al ritmo de retorno y descenso. Configurada con paletas visuales e íconos específicos que contrastan con la ida, permitiendo medir los tramos técnicos de bajada rápida.
+  ![Resumen Vuelta del Dashboard](img/03_vuelta.png)
+
+- **Indicadores:** Fórmula de métricas calculadas en el dashboard.
+  ![Resumen KPI Dashboard](img/04_formulas.png)
+
 
 ------------------------------------------------------------------------
 
@@ -101,22 +74,11 @@ siguientes librerías especializadas:
 
 ### ⚠️ Limitación Crítica de Visualización (Layout No Responsivo)
 
-Este dashboard ha sido diseñado exclusivamente para entornos de análisis
-profesional en estaciones de trabajo fijas. **El diseño no es responsivo
-(No cuenta con soporte autoajustable para dispositivos móviles, tablets
-o pantallas divididas)**.
+Este dashboard ha sido diseñado exclusivamente para entornos de análisis profesional en estaciones de trabajo fijas. **El diseño no es responsivo (No cuenta con soporte autoajustable para dispositivos móviles, tablets o pantallas divididas)**.
 
-Para asegurar una correcta experiencia visual, el despliegue de las
-mallas analíticas (`g-col`), los mapas interactivos y la correcta
-lectura en paralelo de los `value_boxes` con tipografías ampliadas, se
-requiere cumplir obligatoriamente con el siguiente entorno de hardware:
-\* **Ancho de Pantalla Mínimo Recomendado:** **1200px** o superior
-
-(Resoluciones estándar de Notebooks de 13" en adelante, monitores Full
-HD 1080p o monitores de escritorio). \* **Visualización:** Se recomienda
-abrir el archivo HTML generado a **pantalla completa** en el navegador
-web de su preferencia (Chrome, Edge, Firefox, Safari) y mantener el
-nivel de zoom al 100%.
+ **Visualización:** Se recomienda
+abrir el archivo HTML generado  en el navegador
+web de su preferencia (Chrome, Edge, Firefox, Safari) y mantener el nivel de zoom al 90%.
 
 ### Dependencias para la Compilación local
 
@@ -133,11 +95,11 @@ instaladas ejecutando: text?code_stdout&code_event_index=2 Archivo
 README.md generado de manera exitosa.
 
 `r     install.packages(c("sf", "tidyverse", "leaflet", "bslib", "htmltools", "bsicons", "lubridate", "paletteer", "ggspatial", "units"))`
-4. Contar con el archivo de traza satelital `banos_azules.gpx` ubicado
+
+4\. Contar con el archivo de traza satelital `banos_azules.gpx` ubicado
 exactamente en la raíz del directorio de trabajo.
 
 Para compilar el panel ejecute en terminal: \`\`\`bash quarto render
 dash_draft.qmd
 
 Desarrollado con fines de optimización analítica en rutas de trekking de alta montaña. 🏔️
-"""
